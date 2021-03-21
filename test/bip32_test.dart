@@ -44,7 +44,7 @@ void main() {
 
         if (ff['seed'] != null) {
           var seed = HEX.decode(ff['seed']);
-          var hdSeed = BIP32.fromSeed(seed, network);
+          var hdSeed = BIP32.fromSeed(Uint8List.fromList(seed), network);
           test('works for seed -> HD wallet', () {
             verify(hdSeed, true, ff, network);
           });
@@ -57,7 +57,7 @@ void main() {
     (fixtures['invalid']['fromBase58'] as List<dynamic>).forEach((f) {
       var network;
       if (f['network'] != null && f['network'] == 'litecoin') network = LITECOIN;
-      BIP32 hd;
+      BIP32? hd;
       try {
         hd = BIP32.fromBase58(f['string'], network);
       } catch(err) {
@@ -96,7 +96,7 @@ void main() {
     final f = fixtures['valid'][0];
     final c = f['master']['children'][0];
     final master = BIP32.fromBase58(f['master']['base58'] as String);
-    BIP32 hd;
+    BIP32? hd;
     try {
       hd = master.deriveHardened(c['m']);
     } catch(err) {
@@ -176,7 +176,7 @@ void main() {
     (fixtures['invalid']['fromSeed'] as List<dynamic>).forEach((f) {
       var hd;
       try {
-        hd = BIP32.fromSeed(HEX.decode(f['seed']));
+        hd = BIP32.fromSeed(Uint8List.fromList(HEX.decode(f['seed'])));
       } catch (err) {
         expect((err as ArgumentError).message, f['exception']);
       } finally {
@@ -189,7 +189,7 @@ void main() {
     Uint8List seed = Uint8List.fromList(List.generate(32, (index) => 1));
     Uint8List hash = Uint8List.fromList(List.generate(32, (index) => 2));
     String sigStr = "9636ee2fac31b795a308856b821ebe297dda7b28220fb46ea1fbbd7285977cc04c82b734956246a0f15a9698f03f546d8d96fe006c8e7bd2256ca7c8229e6f5c";
-    Uint8List signature = HEX.decode(sigStr);
+    Uint8List signature = Uint8List.fromList(HEX.decode(sigStr));
     BIP32 node = BIP32.fromSeed(seed);
     expect(HEX.encode(node.sign(hash)), sigStr);
     expect(node.verify(hash, signature), true);
