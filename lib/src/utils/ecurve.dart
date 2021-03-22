@@ -212,6 +212,7 @@ BigInt _decodeBigInt(List<int> bytes) {
   return result;
 }
 
+
 BigInt fromBuffer(Uint8List d) {
   return _decodeBigInt(d);
 }
