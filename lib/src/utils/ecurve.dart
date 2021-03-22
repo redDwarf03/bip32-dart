@@ -206,12 +206,12 @@ Uint8List _encodeBigInt(BigInt number) {
 /// Decode a BigInt from bytes in big-endian encoding.
 BigInt _decodeBigInt(List<int> bytes) {
   BigInt result = BigInt.from(0);
+  //
   for (int i = 0; i < bytes.length; i++) {
     result += BigInt.from(bytes[bytes.length - i - 1]) << (8 * i);
   }
   return result;
 }
-
 
 BigInt fromBuffer(Uint8List d) {
   return _decodeBigInt(d);
