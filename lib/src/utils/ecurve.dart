@@ -9,7 +9,6 @@ import 'package:pointycastle/pointycastle.dart';
 import "package:pointycastle/signers/ecdsa_signer.dart";
 import 'package:pointycastle/macs/hmac.dart';
 import "package:pointycastle/digests/sha256.dart";
-import 'package:pointycastle/src/utils.dart';
 
 final ZERO32 = Uint8List.fromList(List.generate(32, (index) => 0));
 final EC_GROUP_ORDER = HEX
@@ -135,14 +134,14 @@ Uint8List sign(Uint8List hash, Uint8List x) {
   if (!isPrivate(x)) throw new ArgumentError(THROW_BAD_PRIVATE);
   ECSignature sig = deterministicGenerateK(hash, x);
   Uint8List buffer = new Uint8List(64);
-  buffer.setRange(0, 32, encodeBigInt(sig.r));
+  buffer.setRange(0, 32, _encodeBigInt(sig.r));
   var s;
   if (sig.s.compareTo(nDiv2) > 0) {
     s = n - sig.s;
   } else {
     s = sig.s;
   }
-  buffer.setRange(32, 64, encodeBigInt(s));
+  buffer.setRange(32, 64, _encodeBigInt(s));
   return buffer;
 }
 
@@ -190,6 +189,20 @@ bool verify(Uint8List hash, Uint8List q, Uint8List signature) {
   */
 }
 
+var _byteMask = new BigInt.from(0xff);
+
+/// Encode a BigInt into bytes using big-endian encoding.
+Uint8List _encodeBigInt(BigInt number) {
+  // Not handling negative numbers. Decide how you want to do that.
+  int size = (number.bitLength + 7) >> 3;
+  var result = new Uint8List(size);
+  for (int i = 0; i < size; i++) {
+    result[size - i - 1] = (number & _byteMask).toInt();
+    number = number >> 8;
+  }
+  return result;
+}
+
 /// Decode a BigInt from bytes in big-endian encoding.
 BigInt _decodeBigInt(List<int> bytes) {
   BigInt result = BigInt.from(0);
@@ -204,7 +217,7 @@ BigInt fromBuffer(Uint8List d) {
 }
 
 Uint8List toBuffer(BigInt d) {
-  return encodeBigInt(d);
+  return _encodeBigInt(d);
 }
 
 ECPoint? decodeFrom(Uint8List P) {
